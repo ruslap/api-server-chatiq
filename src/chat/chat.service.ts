@@ -12,7 +12,30 @@ export class ChatService {
     }
 
     async saveVisitorMessage(siteId: string, visitorId: string, text: string) {
-        // Find or create chat
+        // 1. Ensure the site exists (SaaS logic: sites should be pre-registered, 
+        // but for demo/testing we'll ensure it exists to avoid FK errors)
+        let site = await this.prisma.site.findUnique({ where: { id: siteId } });
+
+        if (!site) {
+            console.log(`[ChatService] Site ${siteId} not found, creating a default one for testing...`);
+            // Find any owner or create a dummy one if needed. 
+            // For now, let's assume there is at least one user or we'll get another error.
+            const user = await this.prisma.user.findFirst();
+            if (user) {
+                site = await this.prisma.site.create({
+                    data: {
+                        id: siteId,
+                        name: 'Auto-created Test Site',
+                        domain: 'localhost',
+                        ownerId: user.id
+                    }
+                });
+            } else {
+                throw new Error("No users found in database to assign the new site to.");
+            }
+        }
+
+        // 2. Find or create chat
         let chat = await this.prisma.chat.findFirst({
             where: {
                 siteId,
