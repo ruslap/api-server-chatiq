@@ -91,4 +91,20 @@ export class ChatService {
             orderBy: { createdAt: 'asc' },
         });
     }
+
+    async clearChatMessages(chatId: string) {
+        return this.prisma.message.deleteMany({
+            where: { chatId }
+        });
+    }
+
+    async deleteChat(chatId: string) {
+        // First delete all messages due to FK constraints if not cascading
+        await this.prisma.message.deleteMany({
+            where: { chatId }
+        });
+        return this.prisma.chat.delete({
+            where: { id: chatId }
+        });
+    }
 }

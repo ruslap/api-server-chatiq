@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Delete } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AuthGuard } from '@nestjs/passport';
 
@@ -18,5 +18,17 @@ export class ChatController {
         const messages = await this.chatService.getMessagesByChat(chatId);
         console.log(`[ChatController] Found ${messages.length} messages`);
         return messages;
+    }
+
+    @Delete(':chatId/clear')
+    async clearChat(@Param('chatId') chatId: string) {
+        console.log(`[ChatController] Clearing history for chatId: "${chatId}"`);
+        return this.chatService.clearChatMessages(chatId);
+    }
+
+    @Delete(':chatId')
+    async deleteChat(@Param('chatId') chatId: string) {
+        console.log(`[ChatController] Deleting chat: "${chatId}"`);
+        return this.chatService.deleteChat(chatId);
     }
 }
